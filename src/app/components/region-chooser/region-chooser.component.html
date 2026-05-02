@@ -1,0 +1,22 @@
+<div class="container">
+
+  <div style="width: 800px;" class="fff-container">
+    <div class="fff">
+      <div class="fff--spans">
+        <ng-container *ngFor="let item of markers">
+          <span *ngIf="item.type == '+'" id="183" class="fff--span">{{asd[item.id].title}} <span
+              class="fff--x">X</span></span>
+          <span id="236" *ngIf="item.type == '-'" style="background:RGB(220,220,220)"
+            class="fff--span">{{asd[item.id].title}} - <span class="fff--x">X</span></span>
+        </ng-container>
+      </div>
+
+
+      <input autocomplete="off" (keyup)="change($event)" class="fff--select">
+    </div>
+    <div class="fff--list" style="display: flex;">
+      <city [data]="this.regions" [id]="0"></city>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,21 @@
+<ul>
+  <ng-container *ngFor="let item of cities">
+    <li>
+      <span style="cursor: pointer;" *ngIf="!open(item.RegionID) && hasChild(item.RegionID)"
+        (click)="resize(item.RegionID)">+ </span>
+      <span style="cursor: pointer;" *ngIf="open(item.RegionID) && hasChild(item.RegionID)"
+        (click)="resize(item.RegionID)">- </span>
+
+      <mat-checkbox (change)="vote(item.RegionID)" [checked]="vvote(item.RegionID)"
+        class="example-margin"></mat-checkbox>
+
+
+      <span [class.red]="hasTyping(item.RegionID)"> {{item['RegionName']}} </span>
+    </li>
+  </ng-container>
+  <ng-container *ngFor="let ch of childCities">
+    <ng-container *ngIf="open(ch.ParentID)">
+      <city [data]="this.data" [id]="ch.RegionID"></city>
+    </ng-container>
+  </ng-container>
+</ul>

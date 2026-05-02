@@ -1,0 +1,46 @@
+.fff--span {
+    z-index: 999;
+    padding: 10px;
+    background-color: gray;
+    margin: 4px;
+}
+
+.fff--spans {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.fff {
+    border: 1px solid blue;
+    padding: 10px;
+    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.fff--select {
+    border: 0px;
+}
+
+.fff--select:focus-visible {
+    border: 0px !important;
+    outline: none;
+}
+
+.fff--x {
+    cursor: pointer;
+}
+
+.fff--list {
+    display: none;
+    overflow: auto;
+}
+
+.fff--list {
+    width: 800px;
+    border: 1px solid black;
+}
+
+ul {
+    list-style-type: none;
+}
