@@ -4,10 +4,9 @@
     <div class="fff">
       <div class="fff--spans">
         <ng-container *ngFor="let item of markers">
-          <span *ngIf="item.type == '+'" id="183" class="fff--span">{{asd[item.id].title}} <span
-              class="fff--x">X</span></span>
-          <span id="236" *ngIf="item.type == '-'" style="background:RGB(220,220,220)"
-            class="fff--span">{{asd[item.id].title}} - <span class="fff--x">X</span></span>
+          <span *ngIf="item.type == '+'" class="fff--span">{{ddata[item.id].title}} <span class="fff--x">X</span></span>
+          <span *ngIf="item.type == '-'" style="background:RGB(220,220,220)" class="fff--span">{{ddata[item.id].title}}
+            - <span class="fff--x">X</span></span>
         </ng-container>
       </div>
 

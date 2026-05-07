@@ -1,134 +1,88 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { GlobalService } from 'src/app/global.service';
+import { RegionService } from '../region.service';
+import { RegionItem } from '../interfaces/Interfaces';
 @Component({
   selector: 'city',
   templateUrl: './city.component.html',
   styleUrls: ['./city.component.scss']
 })
 export class CityComponent implements OnInit, OnChanges {
-  @Input() data = [];
-  @Input() id = 1;
-  public cities: any = [];
-  public childCities: any = [];
-  constructor(public service: GlobalService) {
+  @Input() data: RegionItem[] = [];
+  @Input() id: Number = 1;
+  public cities: RegionItem[] = [];
+  public childCities: RegionItem[] = [];
+  constructor(public service: RegionService) {
 
   }
-  oopen(id: any, _ff: any = null) {
-    let nestedset = this.service.nestedset.getValue();
-    let vv = _ff ?? this.service.vote.getValue();
-    let f = [];
-    let cur = nestedset[id];
-    for (let i = 0; i <= vv.length - 1; i++) {
-      if (nestedset[vv[i]].left < cur.left && nestedset[vv[i]].right > cur.right) {
-        f.push(nestedset[vv[i]].lvl)
-      }
-    }
-    return f.length ? Math.max(...f) : null;
-  }
-  close(id: any, _ff: any = null) {
-    let nestedset = this.service.nestedset.getValue();
-    let vv = _ff ?? this.service.voteminus.getValue()
-    let f = [];
-    let cur = nestedset[id];
-    for (let i = 0; i <= vv.length - 1; i++) {
-      if (nestedset[vv[i]].left < cur.left && nestedset[vv[i]].right > cur.right) {
-        f.push(nestedset[vv[i]].lvl)
-      }
-    }
-    return f.length ? Math.max(...f) : null;
-  }
-  open(id: any) {
 
+  open(id: Number) {
     return this.service.resize.getValue().includes(id) || this.service.vote.getValue().includes(id) || this.service.resizeT.getValue().includes(id)
-
   }
+
   hasChild(id: any) {
     return this.service.hasChild.getValue()[id]?.length ?? null;
   }
-  hasTyping(id: any) {
+
+  hasTyping(id: Number) {
     return this.service.typing.getValue().includes(id);
   }
-  resize(id: any) {
-    let ff = this.service.resize.getValue();
-    if (ff.includes(id)) {
-      this.service.resize.next(ff.filter((c: any) => c !== id))
-    } else {
-      this.service.resize.next([...ff, id]);
-    }
 
+  resize(id: Number) {
+    this.service.toggle(this.service.resize, id)
   }
-  vvote(id: any) {
 
-    let ff = this.service.vote.getValue();
+  vvote(id: Number) {
 
-    let o = this.oopen(id) ?? 1;
-    let c = this.close(id) ?? -1
+    let arrVote = this.service.vote.getValue();
 
-    return ff.includes(id) || (this.oopen(id) && c < o)
+    let arrMinus = this.service.voteminus.getValue();
+
+    let open = this.service.getUpOpenLvl(id) ?? 1;
+    let close = this.service.getUpClosedLvl(id) ?? -1
+
+    return (arrVote.includes(id) || (this.service.getUpOpenLvl(id) && close < open)) && !arrMinus.includes(id)
   }
-  vote(id: any) {
-    let open = this.oopen(id);
-    let closed = this.close(id);
+
+  vote(id: Number) {
+
+    let open = this.service.getUpOpenLvl(id);
+    let closed = this.service.getUpClosedLvl(id);
+
     if (!open && !closed) {
-      let ff = this.service.vote.getValue();
-      if (ff.includes(id)) {
-        this.service.vote.next(ff.filter((c: any) => c !== id))
-      } else {
-        this.service.vote.next([...ff, id]);
-      }
+      this.service.toggle(this.service.vote, id)
     }
     if (open && !closed) {
-      let ff = this.service.voteminus.getValue();
-      if (ff.includes(id)) {
-        this.service.voteminus.next(ff.filter((c: any) => c !== id))
-      } else {
-        this.service.voteminus.next([...ff, id]);
-      }
+      this.service.toggle(this.service.voteminus, id)
     }
     if (open && closed && open > closed) {
-      let ff = this.service.voteminus.getValue();
-      if (ff.includes(id)) {
-        this.service.voteminus.next(ff.filter((c: any) => c !== id))
-      } else {
-        this.service.voteminus.next([...ff, id]);
-      }
+      this.service.toggle(this.service.voteminus, id)
     }
     if (open && closed && open < closed) {
-      let ff = this.service.vote.getValue();
-      if (ff.includes(id)) {
-        this.service.vote.next(ff.filter((c: any) => c !== id))
-      } else {
-        this.service.vote.next([...ff, id]);
-      }
+      this.service.toggle(this.service.vote, id)
     }
 
-
-    let nestedset = this.service.nestedset.getValue();
-
+    //Удалить все "выбранные" дети текущего vote
     let clearv = this.service.vote.getValue();
-
-
-
-    clearv = clearv.filter((c: any) => {
-      return !(nestedset[id].left < nestedset[c].left && nestedset[id].right > nestedset[c].right) || String(c) == String(id)
+    clearv = clearv.filter((c: Number) => {
+      return !this.service.isChild(c, [id]);
     })
     this.service.vote.next(clearv)
+
     let clearminus = this.service.voteminus.getValue();
-    clearminus = clearminus.filter((c: any) => {
-      return !(nestedset[id].left < nestedset[c].left && nestedset[id].right > nestedset[c].right) || String(c) == String(id)
+    clearminus = clearminus.filter((c: Number) => {
+      return !this.service.isChild(c, [id]);
     })
     this.service.voteminus.next(clearminus)
-
-
-
   }
+
   ngOnInit(): void {
   }
+
   ngOnChanges() {
-    this.cities = this.data.filter((c: any) => {
+    this.cities = this.data.filter((c: RegionItem) => {
       return c.RegionID === this.id
     })
-    this.childCities = this.data.filter((c: any) => {
+    this.childCities = this.data.filter((c: RegionItem) => {
       return c.ParentID === this.id
     })
 

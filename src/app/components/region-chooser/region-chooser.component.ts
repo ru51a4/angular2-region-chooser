@@ -1,18 +1,74 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { combineLatest, map, shareReplay } from 'rxjs';
-import { GlobalService } from 'src/app/global.service';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Subject, combineLatest, map, shareReplay, takeUntil } from 'rxjs';
+import { RegionService } from './region.service';
+import { HttpClient } from '@angular/common/http';
+import { JsonRegion, RegionItem } from './interfaces/Interfaces';
 @Component({
   selector: 'region-chooser',
   templateUrl: './region-chooser.component.html',
   styleUrls: ['./region-chooser.component.scss']
 })
-export class RegionChooserComponent implements OnInit {
+export class RegionChooserComponent implements OnInit, OnDestroy {
   public ff: any = [];
   public markers: any = [];
+  private destroy$ = new Subject<void>();
+  public regions: RegionItem[] = [];
+  public ddata: any = {};
+
+  constructor(public service: RegionService, public http: HttpClient) {
+
+  }
+
+
+  ngOnInit(): void {
+    this.http.get<JsonRegion>('/assets/regions.json').subscribe((data: JsonRegion) => {
+      this.regions = data.data;
+      let arr = this.regions
+      let hasChild: any = {};
+      let counter = 1;
+      let lvl = 1;
+      let fff: any = {}
+      let getLvl = (item: any) => {
+        item.left = counter++;
+        item.lvl = lvl
+        if (!hasChild[item.ParentID]) {
+          hasChild[item.ParentID] = []
+        }
+        hasChild[item.ParentID].push(item.RegionID)
+        let childs = arr.filter((c) => c["ParentID"] === item["RegionID"]);
+
+        childs.forEach((item) => {
+          lvl++
+          getLvl(item);
+          lvl--
+        });
+        item.right = counter++
+
+        fff[item.RegionID] = { title: item.RegionName, lvl: item.lvl, left: item.left, right: item.right }
+      };
+      getLvl(arr.find((c) => c["ParentID"] === null))
+      this.service.hasChild.next(hasChild)
+      this.service.regionDictionary.next(fff);
+      this.ddata = fff
+
+      combineLatest([
+        this.service.vote,
+        this.service.voteminus,
+      ]).
+        pipe(takeUntil(this.destroy$))
+        .subscribe((d: any) => {
+          this.markers = [...d[0].map((c: any) => {
+            return { id: c, type: '+' }
+          }), ...d[1].map((c: any) => {
+            return { id: c, type: '-' }
+          })].sort((a, b) => a.id - b.id)
+        })
+    })
+  }
+
   change(e: any) {
     let ch = e.target.value;
     //
-
     let step2 = [];
     let lvl1 = this.regions.filter((item: any) => {
       return (ch.length > 2) ? (item["RegionName"].toLowerCase().includes(ch.toLowerCase())) : false;
@@ -58,76 +114,21 @@ export class RegionChooserComponent implements OnInit {
       this.resize2(id);
     });
     //
-
-
-  }
-  resizedel(id: any) {
-    let ff = this.service.resizeT.getValue();
-    if (ff.includes(id)) {
-      this.service.resizeT.next(ff.filter((c: any) => c !== id));
-    } else {
-    }
-  }
-  resize2(id: any) {
-    let ff = this.service.resizeT.getValue();
-    if (ff.includes(id)) {
-      return;
-    } else {
-      this.service.resizeT.next([...ff, id]);
-    }
-  }
-  public regions = [];
-  public lvl: any = [];
-
-  constructor(public service: GlobalService) {
-
   }
 
-  public asd: any = {};
-
-  ngOnInit(): void {
-    fetch('/assets/regions.json')
-      .then(response => response.json())
-      .then(data => {
-        this.regions = data.data;
-        let arr = this.regions
-        let hasChild: any = {};
-        let counter = 1;
-        let lvl = 1;
-        let fff: any = {}
-        let getLvl = (item: any) => {
-          item.left = counter++;
-          item.lvl = lvl
-          if (!hasChild[item.ParentID]) {
-            hasChild[item.ParentID] = []
-          }
-          hasChild[item.ParentID].push(item.RegionID)
-          let childs = arr.filter((c) => c["ParentID"] === item["RegionID"]);
-
-          childs.forEach((item) => {
-            lvl++
-            getLvl(item);
-            lvl--
-          });
-          item.right = counter++
-
-          fff[item.RegionID] = { title: item.RegionName, lvl: item.lvl, left: item.left, right: item.right }
-        };
-        getLvl(arr.find((c) => c["ParentID"] === null))
-        this.service.hasChild.next(hasChild)
-        this.service.nestedset.next(fff);
-        this.asd = fff
-
-        combineLatest([
-          this.service.vote,
-          this.service.voteminus,
-        ]).subscribe((d: any) => {
-          this.markers = [...d[0].map((c: any) => {
-            return { id: c, type: '+' }
-          }), ...d[1].map((c: any) => {
-            return { id: c, type: '-' }
-          })].sort((a, b) => a.id - b.id)
-        })
-      });
+  resizedel(id: Number) {
+    let arr = this.service.resizeT.getValue();
+    this.service.resizeT.next(arr.filter((c: any) => c !== id));
   }
+
+  resize2(id: Number) {
+    let arr = this.service.resizeT.getValue();
+    this.service.resizeT.next([...arr, id]);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
 }
