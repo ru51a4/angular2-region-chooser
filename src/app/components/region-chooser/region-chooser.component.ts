@@ -20,7 +20,6 @@ export class RegionChooserComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
-    this.service.init();
     this.service.regionDictionary
       .pipe(takeUntil(this.destroy$))
       .subscribe((ddata: any) => {
@@ -36,6 +35,7 @@ export class RegionChooserComponent implements OnInit, OnDestroy {
       .subscribe((_regions: any) => {
         this.regions = _regions;
       });
+    this.service.init();
   }
 
   change(e: any) {
