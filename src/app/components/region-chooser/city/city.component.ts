@@ -32,47 +32,11 @@ export class CityComponent implements OnInit, OnChanges {
   }
 
   vvote(id: Number) {
-
-    let arrVote = this.service.vote.getValue();
-
-    let arrMinus = this.service.voteminus.getValue();
-
-    let open = this.service.getUpOpenLvl(id) ?? 1;
-    let close = this.service.getUpClosedLvl(id) ?? -1
-
-    return (arrVote.includes(id) || (this.service.getUpOpenLvl(id) && close < open)) && !arrMinus.includes(id)
+    return this.service.vvote(id);
   }
 
   vote(id: Number) {
-
-    let open = this.service.getUpOpenLvl(id);
-    let closed = this.service.getUpClosedLvl(id);
-
-    if (!open && !closed) {
-      this.service.toggle(this.service.vote, id)
-    }
-    if (open && !closed) {
-      this.service.toggle(this.service.voteminus, id)
-    }
-    if (open && closed && open > closed) {
-      this.service.toggle(this.service.voteminus, id)
-    }
-    if (open && closed && open < closed) {
-      this.service.toggle(this.service.vote, id)
-    }
-
-    //Удалить все "выбранные" дети текущего vote
-    let clearv = this.service.vote.getValue();
-    clearv = clearv.filter((c: Number) => {
-      return !this.service.isChild(c, [id]);
-    })
-    this.service.vote.next(clearv)
-
-    let clearminus = this.service.voteminus.getValue();
-    clearminus = clearminus.filter((c: Number) => {
-      return !this.service.isChild(c, [id]);
-    })
-    this.service.voteminus.next(clearminus)
+    this.service.voteEvent(id)
   }
 
   ngOnInit(): void {
