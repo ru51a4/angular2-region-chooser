@@ -199,7 +199,7 @@ export class RegionService {
     // ========== UTILS ==========
 
     /**
-     * Проверка, является ли регион дочерним для одного из родителей
+     * Получить все уровни родителей
      */
     isChild(id: any, parents: any[]): Number | null {
         let regionDictionary = this.regionDictionary.getValue();
