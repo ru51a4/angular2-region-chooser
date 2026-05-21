@@ -37,8 +37,8 @@ export class RegionService {
         combineLatest([
             this.vote,
             this.voteminus,
-        ]).
-            pipe(takeUntil(this.destroy$))
+        ])
+            .pipe(takeUntil(this.destroy$))
             .subscribe((d: any) => {
                 this.markers.next([...d[0].map((c: any) => {
                     return { id: c, type: '+' }
