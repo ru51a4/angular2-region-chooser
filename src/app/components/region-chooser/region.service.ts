@@ -139,6 +139,13 @@ export class RegionService {
     }
 
     /**
+    * "Открыть" регион
+    */
+    _resize(id: Number) {
+        this.toggle(this.resize, id)
+    }
+
+    /**
     * Определение состояния чекбокса региона
     */
     vvote(id: Number) {

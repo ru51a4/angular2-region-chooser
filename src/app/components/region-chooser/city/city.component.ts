@@ -28,7 +28,7 @@ export class CityComponent implements OnInit, OnChanges {
   }
 
   resize(id: Number) {
-    this.service.toggle(this.service.resize, id)
+    this.service._resize(id)
   }
 
   vvote(id: Number) {
