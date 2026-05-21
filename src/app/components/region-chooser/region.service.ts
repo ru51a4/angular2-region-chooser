@@ -34,6 +34,22 @@ export class RegionService {
      * Инициализация
      * */
     init() {
+        combineLatest([
+            this.vote,
+            this.voteminus,
+        ]).
+            pipe(takeUntil(this.destroy$))
+            .subscribe((d: any) => {
+                this.markers.next([...d[0].map((c: any) => {
+                    return { id: c, type: '+' }
+                }), ...d[1].map((c: any) => {
+                    return { id: c, type: '-' }
+                })].sort((a, b) => a.id - b.id))
+            })
+
+        if (Object.values(this.regionDictionary.getValue()).length) {
+            return;
+        }
         this.http.get<JsonRegion>('/assets/regions.json').subscribe((data: JsonRegion) => {
             this.regions = data.data;
             let arr = this.regions
@@ -63,19 +79,6 @@ export class RegionService {
             getLvl(arr.find((c) => c["ParentID"] === null))
             this.hasChild.next(hasChild)
             this.regionDictionary.next(fff);
-
-            combineLatest([
-                this.vote,
-                this.voteminus,
-            ]).
-                pipe(takeUntil(this.destroy$))
-                .subscribe((d: any) => {
-                    this.markers.next([...d[0].map((c: any) => {
-                        return { id: c, type: '+' }
-                    }), ...d[1].map((c: any) => {
-                        return { id: c, type: '-' }
-                    })].sort((a, b) => a.id - b.id))
-                })
         })
     }
 
