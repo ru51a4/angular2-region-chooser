@@ -163,6 +163,9 @@ export class RegionService {
         return (arrVote.includes(id) || (this.getUpOpenLvl(id) && close < open)) && !arrMinus.includes(id)
     }
 
+    /**
+    * Получить выбранные
+    */
     getIds() {
         let res: any = [];
         let arr = this.regions;
