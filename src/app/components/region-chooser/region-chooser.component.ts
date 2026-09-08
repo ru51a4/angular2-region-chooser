@@ -42,7 +42,11 @@ export class RegionChooserComponent implements OnInit, OnDestroy {
     let ch = e.target.value;
     this.service.typingEvent(ch);
   }
-
+  get() {
+    let ids = this.service.getIds();
+    alert('check console')
+    console.log(ids)
+  }
   ngOnDestroy(): void {
     this.service._destroy();
     this.destroy$.next();

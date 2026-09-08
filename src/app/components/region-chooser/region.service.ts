@@ -163,6 +163,22 @@ export class RegionService {
         return (arrVote.includes(id) || (this.getUpOpenLvl(id) && close < open)) && !arrMinus.includes(id)
     }
 
+    getIds() {
+        let res: any = [];
+        let arr = this.regions;
+        let dfs = (item: any) => {
+            if (this.vvote(item.RegionID)) {
+                res.push(item)
+            }
+            let childs = arr.filter((c) => c["ParentID"] === item["RegionID"]);
+            childs.forEach((item) => {
+                dfs(item);
+            });
+        };
+        dfs(arr.find((c) => c["ParentID"] === null))
+        return res;
+    }
+
     /**
     * Переключение состояния чекбокса
     */
@@ -235,7 +251,6 @@ export class RegionService {
             Subject.next([...arr, item]);
         }
     }
-
     _destroy() {
         this.destroy$.next();
         this.destroy$.complete();
